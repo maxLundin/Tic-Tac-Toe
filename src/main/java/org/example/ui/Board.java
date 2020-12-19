@@ -2,7 +2,6 @@ package org.example.ui;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Function;
 
 /**
@@ -26,7 +25,7 @@ public class Board {
     /**
      * Construct the Tic Tac Toe board.
      */
-    Board() {
+    public Board() {
         board = new ArrayList<>(INIT_BOARD_SIZE);
         for (int row = 0; row < INIT_BOARD_SIZE; row++) {
             board.add(new ArrayList<>(INIT_BOARD_SIZE));
@@ -128,17 +127,17 @@ public class Board {
         return winner;
     }
 
-    class Point {
-        int x, y;
+    public static class Point {
+        public int x, y;
 
-        Point(int a, int b) {
+        public Point(int a, int b) {
             this.x = a;
             this.y = b;
         }
+    }
 
-        public boolean eq(Point other) {
-            return board.get(x).get(y) != State.Blank && board.get(x).get(y) == board.get(other.x).get(other.y);
-        }
+    public boolean eq(Point self, Point other) {
+        return board.get(self.x).get(self.y) != State.Blank && board.get(self.x).get(self.y) == board.get(other.x).get(other.y);
     }
 
     private boolean checkPoint(Point point) {
@@ -159,7 +158,7 @@ public class Board {
             if (!checkPoint(point)) {
                 break;
             }
-            if (!init.eq(point)) {
+            if (!eq(init, point)) {
                 break;
             }
             count++;
