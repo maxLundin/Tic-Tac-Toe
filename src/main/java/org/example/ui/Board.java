@@ -41,17 +41,17 @@ public class Board {
 
     private void resize() {
         int newSize = board.size() + 2 * DIFF_BOARD_SIZE;
-        List<List<State>> boardtmp = new ArrayList<>(newSize);
+        List<List<State>> boardTmp = new ArrayList<>(newSize);
         for (int row = 0; row < newSize; row++) {
-            boardtmp.add(new ArrayList<>(newSize));
+            boardTmp.add(new ArrayList<>(newSize));
             for (int col = 0; col < newSize; col++) {
-                boardtmp.get(row).add(State.Blank);
+                boardTmp.get(row).add(State.Blank);
             }
         }
         for (int i = 0; i < board.size(); ++i) {
-            boardtmp.get(i + DIFF_BOARD_SIZE).set(i + DIFF_BOARD_SIZE, board.get(i).get(i));
+            boardTmp.get(i + DIFF_BOARD_SIZE).set(i + DIFF_BOARD_SIZE, board.get(i).get(i));
         }
-        board = boardtmp;
+        board = boardTmp;
     }
 
     /**
@@ -92,12 +92,6 @@ public class Board {
         }
 
         moveCount++;
-
-        // The game is a draw.
-        if (moveCount == board.size() * board.size()) {
-            winner = State.Blank;
-            gameOver = true;
-        }
 
         // Check for a winner.
         check(new Point(x, y));
@@ -173,9 +167,9 @@ public class Board {
     }
 
     private boolean checkOne(Point p, Function<Point, Point> prev, Function<Point, Point> next) {
-        int min = countEqRange(p, next);
-        int plus = countEqRange(p, prev);
-        if (min + plus + 1 >= 5) {
+        int countNext = countEqRange(p, next);
+        int countPrev = countEqRange(p, prev);
+        if (countNext + countPrev + 1 >= 5) {
             winner = board.get(p.x).get(p.y);
             gameOver = true;
             return true;
