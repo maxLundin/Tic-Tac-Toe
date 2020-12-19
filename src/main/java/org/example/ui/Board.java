@@ -12,6 +12,7 @@ public class Board {
 
     static final int INIT_BOARD_SIZE = 10;
     static final int DIFF_BOARD_SIZE = 5;
+    static final int WIN_VALUE = 5;
 
     public enum State {Blank, X, O}
 
@@ -169,7 +170,7 @@ public class Board {
     private boolean checkOne(Point p, Function<Point, Point> prev, Function<Point, Point> next) {
         int countNext = countEqRange(p, next);
         int countPrev = countEqRange(p, prev);
-        if (countNext + countPrev + 1 >= 5) {
+        if (countNext + countPrev + 1 >= WIN_VALUE) {
             winner = board.get(p.x).get(p.y);
             gameOver = true;
             return true;
