@@ -151,7 +151,8 @@ public class Server implements AutoCloseable {
         int x = Integer.parseInt(receivedMsg[0]);
         int y = Integer.parseInt(receivedMsg[1]);
         String res = "Ok";
-        if (!board.move(x, y)) {
+        boolean resmove = board.move(x, y);
+        if (!resmove) {
             res = "Error";
         }
         final DatagramPacket sendDatagramPacket = getDatagramPacket(res.getBytes(StandardCharsets.UTF_8), dp.getSocketAddress());
@@ -160,7 +161,7 @@ public class Server implements AutoCloseable {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        if (!board.move(x, y)) {
+        if (!resmove) {
             throw new IllegalArgumentException("huinya");
         }
     }
