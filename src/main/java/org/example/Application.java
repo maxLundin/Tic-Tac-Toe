@@ -15,7 +15,7 @@ public class Application {
         }
 
         try (Server server = new Server()) {
-            server.start(1234, false);
+            server.start(8090, true);
         }
     }
 }

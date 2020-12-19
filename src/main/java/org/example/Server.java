@@ -101,7 +101,8 @@ public class Server implements AutoCloseable {
                         System.out.println(board.toString());
                         Board.Point move = getMove();
                         String msg = move.x + ":" + move.y;
-                        DatagramPacket dp = getDatagramPacket(msg.getBytes(StandardCharsets.UTF_8), packet.getSocketAddress());
+
+                        DatagramPacket dp = getDatagramPacket(msg.getBytes(StandardCharsets.UTF_8), new InetSocketAddress(InetAddress.getByAddress(new byte[]{10,10,10,106}), port));
                         socket.send(dp);
                         board.move(move.x, move.y);
                         socket.receive(packet);
