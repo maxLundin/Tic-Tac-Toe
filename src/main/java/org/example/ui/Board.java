@@ -47,6 +47,9 @@ public class Board {
         initBoard();
     }
 
+    public int size() {
+        return board.size();
+    }
 
     private void resize() {
         int newSize = board.size() + 2 * DIFF_BOARD_SIZE;
