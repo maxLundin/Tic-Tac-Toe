@@ -55,15 +55,17 @@ public class Server implements AutoCloseable {
         if (first) {
             final DatagramPacket packet = getDatagramPacket(bufSize);
             try {
-                DatagramSocket socketInit = new DatagramSocket(port);
+                DatagramSocket socketInit = new DatagramSocket(port + 1);
+                int initBufSize = socketInit.getReceiveBufferSize();
+                final DatagramPacket InitPacket = getDatagramPacket(initBufSize);
                 do {
-                    socketInit.receive(packet);
-                } while (!getResult(packet).equals("Play"));
+                    socketInit.receive(InitPacket);
+                } while (!getResult(InitPacket).equals("Play"));
                 String msg = "Ok";
-                DatagramPacket dp = getDatagramPacket(msg.getBytes(StandardCharsets.UTF_8), packet.getSocketAddress());
+                DatagramPacket dp = getDatagramPacket(msg.getBytes(StandardCharsets.UTF_8), InitPacket.getSocketAddress());
                 socketInit.send(dp);
                 socketInit.close();
-                System.out.println("Game started with " + packet.getSocketAddress());
+                System.out.println("Game started with " + InitPacket.getSocketAddress());
             } catch (IOException e) {
                 e.printStackTrace();
             }
