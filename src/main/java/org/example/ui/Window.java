@@ -1,6 +1,6 @@
 package org.example.ui;
 
-import org.example.Transmitter;
+import org.example.players.human.Transmitter;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -30,6 +30,10 @@ public class Window extends JFrame {
     public Window(Board board, Transmitter transmitter) {
         this(transmitter);
         this.board = board;
+    }
+
+    public Board getBoard() {
+        return board;
     }
 
     private Panel createPanel() {

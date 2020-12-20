@@ -1,39 +1,31 @@
-package org.example;
+package org.example.players;
 
 
 import org.example.connections.Connection;
 import org.example.ui.Board;
-import org.example.ui.Window;
 
 import java.io.IOException;
 import java.net.*;
 
-public class Player implements AutoCloseable {
-    private final Board board = new Board();
-    private final Connection connection;
-    private static final String STATUS_OK = "Ok";
-    private static final String STATUS_ERROR = "Error";
-    private static final String STATUS_QUEST = "Play";
-    private final Transmitter transmitter;
+public abstract class Player implements AutoCloseable {
+    protected final Board board;
+    protected final Connection connection;
+    protected static final String STATUS_OK = "Ok";
+    protected static final String STATUS_ERROR = "Error";
+    protected static final String STATUS_QUEST = "Play";
 
-    public Player(Transmitter transmitter, Connection connection) {
-        this.transmitter = transmitter;
+    public Player(Connection connection, Board board) {
         this.connection = connection;
+        this.board = board;
     }
 
     public Board getBoard() {
         return board;
     }
 
-    private Board.Point getMove() {
-        System.out.println("getPoints:");
-        transmitter.setValid(true);
-        while (transmitter.getValid()) {
-        }
-        return transmitter.getPoint();
-    }
+    protected abstract Board.Point getMove();
 
-    private void ourMove() throws IOException {
+    protected void ourMove() throws IOException {
 
         Board.Point move = getMove();
         connection.sendPoint(move);
@@ -59,23 +51,21 @@ public class Player implements AutoCloseable {
         }
     }
 
-    private void theirMove(Window windowInstance) throws IOException {
+    protected void theirMove() throws IOException {
         updateReceived();
-        windowInstance.repaintPicture();
-
         if (board.isGameOver()) {
             System.out.println(board.getWinner());
         }
     }
 
-    private void acceptConnection() throws IOException {
+    protected void acceptConnection() throws IOException {
         String status;
         do {
             status = connection.receiveStatus();
         } while (!status.equals(STATUS_QUEST));
     }
 
-    private void establishConnection() throws IOException {
+    protected void establishConnection() throws IOException {
         String str;
         do {
             connection.sendBroadcast(STATUS_QUEST);
@@ -85,24 +75,32 @@ public class Player implements AutoCloseable {
         } while (!str.equals(STATUS_OK));
     }
 
-    public void start(boolean first, Window windowInstance) {
+    protected void afterConnect() {
+    }
+
+    protected void afterEnemyMove() {
+    }
+
+    public void start(boolean first) {
         try {
             if (first) {
                 acceptConnection();
-                windowInstance.setVisible(true);
+                afterConnect();
                 connection.sendStatus(STATUS_OK);
                 System.out.println("Game started");
                 while (!connection.isClosed() && !Thread.currentThread().isInterrupted()) {
-                    theirMove(windowInstance);
+                    theirMove();
+                    afterEnemyMove();
                     ourMove();
                 }
             } else {
                 establishConnection();
-                windowInstance.setVisible(true);
+                afterConnect();
                 System.out.println("Connected game started:");
                 while (!connection.isClosed() && !Thread.currentThread().isInterrupted()) {
                     ourMove();
-                    theirMove(windowInstance);
+                    theirMove();
+                    afterEnemyMove();
                 }
             }
         } catch (PortUnreachableException e) {
@@ -114,7 +112,6 @@ public class Player implements AutoCloseable {
         } catch (IOException e) {
             System.err.println("IOException on connection: " + connection.toString());
         }
-
     }
 
     /**
@@ -125,7 +122,7 @@ public class Player implements AutoCloseable {
         connection.close();
     }
 
-    private void updateReceived() throws IOException {
+    protected void updateReceived() throws IOException {
         Board.Point point = connection.receivePoint();
         String status = board.move(point.x, point.y) ? STATUS_OK : STATUS_ERROR;
         connection.sendStatus(status);

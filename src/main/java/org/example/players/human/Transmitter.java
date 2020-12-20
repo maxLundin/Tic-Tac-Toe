@@ -1,4 +1,4 @@
-package org.example;
+package org.example.players.human;
 
 import org.example.ui.Board;
 
