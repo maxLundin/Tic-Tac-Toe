@@ -8,14 +8,12 @@ import java.nio.charset.StandardCharsets;
 
 public class SocketConnection implements Connection {
     private final DatagramSocket ds;
-    private final int bufSize;
     final DatagramPacket packet;
 
     private static DatagramPacket getDatagramPacket(int size) {
         byte[] byteArray = new byte[size];
         return new DatagramPacket(byteArray, size);
     }
-
 
     private static String getResult(final DatagramPacket dp) {
         return new String(
@@ -33,7 +31,7 @@ public class SocketConnection implements Connection {
     public SocketConnection() {
         try {
             ds = new DatagramSocket(8090);
-            bufSize = ds.getReceiveBufferSize();
+            int bufSize = ds.getReceiveBufferSize();
             packet = getDatagramPacket(bufSize);
         } catch (SocketException e) {
             throw new IllegalStateException("Socket fail", e);
@@ -75,8 +73,6 @@ public class SocketConnection implements Connection {
         ds.receive(packet);
         return getResult(packet);
     }
-
-    private static final String STATUS_QUEST = "Play";
 
     @Override
     public void sendBroadcast(String str) throws IOException {

@@ -2,7 +2,6 @@ package org.example.players.human;
 
 import org.example.connections.Connection;
 import org.example.players.Player;
-import org.example.players.human.Transmitter;
 import org.example.ui.Board;
 import org.example.ui.Window;
 
