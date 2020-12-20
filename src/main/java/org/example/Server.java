@@ -49,7 +49,7 @@ public class Server implements AutoCloseable {
         return transmitter.getPoint();
     }
 
-    private boolean ourMove(DatagramPacket packet) throws IOException {
+    private void ourMove(DatagramPacket packet) throws IOException {
 
         Board.Point move = getMove();
         final String msg = move.x + ":" + move.y;
@@ -66,24 +66,22 @@ public class Server implements AutoCloseable {
         }
         if (!received.equals(STATUS_OK)) {
             System.err.println(STATUS_ERROR);
-            return false;
+            throw new IllegalStateException("Desks unsynchronized");
         }
         if (board.isGameOver()) {
+            board.reset();
             System.out.println(board.getWinner());
-            return false;
         }
-        return true;
     }
 
-    private boolean theirMove(DatagramPacket packet, Window windowInstance) throws IOException {
+    private void theirMove(DatagramPacket packet, Window windowInstance) throws IOException {
         socket.receive(packet);
-        windowInstance.repaintPicture();
         updateReceived(packet);
+        windowInstance.repaintPicture();
         if (board.isGameOver()) {
+            board.reset();
             System.out.println(board.getWinner());
-            return false;
         }
-        return true;
     }
 
     private void acceptConnection(DatagramSocket socket, DatagramPacket packet) throws IOException {
@@ -128,23 +126,17 @@ public class Server implements AutoCloseable {
                 socket.send(dp);
                 System.out.println("Game started with " + packet.getSocketAddress());
                 while (!socket.isClosed() && !Thread.currentThread().isInterrupted()) {
-                    boolean success;
-                    success = theirMove(packet, windowInstance);
-                    if (!success) break;
-                    success = ourMove(packet);
-                    if (!success) break;
+                    theirMove(packet, windowInstance);
+                    ourMove(packet);
                 }
             } else {
                 establishConnection(socket, packet);
                 windowInstance.setVisible(true);
                 System.out.println("Connected game started:");
-                boolean success;
                 System.out.println(socket.isClosed() + " " + Thread.currentThread().isInterrupted());
                 while (!socket.isClosed() && !Thread.currentThread().isInterrupted()) {
-                    success = ourMove(packet);
-                    if (!success) break;
-                    success = theirMove(packet, windowInstance);
-                    if (!success) break;
+                    ourMove(packet);
+                    theirMove(packet, windowInstance);
                 }
             }
         } catch (PortUnreachableException e) {
