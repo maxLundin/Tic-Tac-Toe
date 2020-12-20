@@ -17,12 +17,12 @@ public class Application {
         switch (val) {
             case 1:
                 try (Server server = new Server()) {
-                    server.start(8090, true);
+                    server.start(8090, false);
                 }
                 break;
             case 2:
                 try (Server server = new Server()) {
-                    server.start(8090, false);
+                    server.start(8090, true);
                 }
                 break;
         }
@@ -32,10 +32,6 @@ public class Application {
             System.out.println(address);
         } catch (UnknownHostException e) {
             e.printStackTrace();
-        }
-
-        try (Server server = new Server()) {
-            server.start(8090, true);
         }
     }
 }
