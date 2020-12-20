@@ -228,4 +228,8 @@ public class Board {
         }
         return sb.toString();
     }
+
+    public State getCell(int x, int y) {
+        return board.get(x).get(y);
+    }
 }

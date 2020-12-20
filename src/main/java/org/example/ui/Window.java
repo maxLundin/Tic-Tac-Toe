@@ -3,6 +3,9 @@ package org.example.ui;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
@@ -10,8 +13,7 @@ public class Window extends JFrame {
     private static final int WIDTH = 600;
     private static final int HEIGHT = 600;
     private Panel panel;
-
-    private static final int TEST_BOARD_SIZE = 10;
+    private Board board;
 
     private Window() {
         panel = createPanel();
@@ -22,11 +24,24 @@ public class Window extends JFrame {
         setVisible(true);
     }
 
+    private Window(Board board) {
+        this();
+        this.board = board;
+    }
+
     private Panel createPanel() {
         Panel panel = new Panel();
         Container cp = getContentPane();
         cp.add(panel);
         return panel;
+    }
+
+    private int getCellWidth() {
+        return WIDTH / board.size();
+    }
+
+    private int getCellHeight() {
+        return HEIGHT / board.size();
     }
 
     private static BufferedImage getImage(String path) {
@@ -40,22 +55,50 @@ public class Window extends JFrame {
     }
 
     private class Panel extends JPanel {
+
+        private void paintGrid(Graphics g) {
+            int cellHeight = getCellHeight();
+            int cellWidth = getCellWidth();
+            for (int i = 0; i < board.size() - 1; i++) {
+                g.drawLine(0, cellHeight * (i + 1), Window.WIDTH, cellHeight * (i + 1));
+            }
+            for (int i = 0; i < board.size() - 1; i++) {
+                g.drawLine(cellWidth * (i + 1), 0, cellWidth * (i + 1), Window.HEIGHT);
+            }
+        }
+
+        private void drawCell(Graphics g, int x, int y, String path) {
+            int minCellHeight = getCellHeight() * x;
+            int minCellWidth = getCellWidth() * (y);
+
+            g.drawImage(getImage(path), minCellWidth, minCellHeight, getCellWidth(), getCellHeight(), null);
+        }
+
+        private void paintImages(Graphics g) {
+            for (int i = 0; i < board.size(); i++) {
+                for (int j = 0; j < board.size(); j++) {
+                    Board.State cellState = board.getCell(i, j);
+                    if (cellState.equals(Board.State.X)) {
+                        drawCell(g, i, j, "x");
+                    } else if (cellState.equals(Board.State.O)) {
+                        drawCell(g, i, j, "o");
+                    }
+                }
+            }
+        }
+
         @Override
         protected void paintComponent(Graphics g) {
-            int cell_height = Window.HEIGHT / TEST_BOARD_SIZE;
-            int cell_width = Window.WIDTH / TEST_BOARD_SIZE;
-            for (int i = 0; i < TEST_BOARD_SIZE - 1; i++) {
-                g.drawLine(0, cell_height * (i + 1), Window.WIDTH, cell_height * (i + 1));
-            }
-            for (int i = 0; i < TEST_BOARD_SIZE - 1; i++) {
-                g.drawLine(cell_width * (i + 1), 0, cell_width * (i + 1), Window.HEIGHT);
-            }
-            g.drawImage(getImage("o"), 0, 0, cell_width, cell_height, null);
+            paintGrid(g);
+            paintImages(g);
         }
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(Window::new);
+        Board board = new Board();
+        board.move(1, 1);
+        board.move(0, 0);
+        SwingUtilities.invokeLater(() -> new Window(board));
     }
 
 }
