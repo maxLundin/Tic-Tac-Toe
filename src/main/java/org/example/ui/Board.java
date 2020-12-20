@@ -49,7 +49,9 @@ public class Board {
             }
         }
         for (int i = 0; i < board.size(); ++i) {
-            boardTmp.get(i + DIFF_BOARD_SIZE).set(i + DIFF_BOARD_SIZE, board.get(i).get(i));
+            for (int j = 0; j < board.size(); ++j) {
+                boardTmp.get(i + DIFF_BOARD_SIZE).set(j + DIFF_BOARD_SIZE, board.get(i).get(j));
+            }
         }
         board = boardTmp;
     }
