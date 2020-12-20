@@ -119,8 +119,6 @@ class BoardTest {
     @Test
     void moveTest2() {
         assertTrue(board.move(0, 0));
-        assertTrue(board.move(4, 4));
-        assertTrue(board.move(3, 3));
         assertTrue(board.move(2, 2));
         assertTrue(board.move(1, 1));
         assertTrue(board.move(0, 0));

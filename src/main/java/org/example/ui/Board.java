@@ -10,7 +10,7 @@ import java.util.function.Function;
 public class Board {
 
     static final int INIT_BOARD_SIZE = 10;
-    static final int DIFF_BOARD_SIZE = 5;
+    static final int DIFF_BOARD_SIZE = 3;
     static final int WIN_VALUE = 5;
 
     public enum State {Blank, X, O}
@@ -22,10 +22,7 @@ public class Board {
     private int moveCount;
     private boolean gameOver;
 
-    /**
-     * Construct the Tic Tac Toe board.
-     */
-    public Board() {
+    private void initBoard() {
         board = new ArrayList<>(INIT_BOARD_SIZE);
         for (int row = 0; row < INIT_BOARD_SIZE; row++) {
             board.add(new ArrayList<>(INIT_BOARD_SIZE));
@@ -37,6 +34,21 @@ public class Board {
         gameOver = false;
         winner = State.Blank;
         playersTurn = State.X;
+    }
+
+    /**
+     * Construct the Tic Tac Toe board.
+     */
+    public Board() {
+        initBoard();
+    }
+
+    public void reset() {
+        initBoard();
+    }
+
+    public int size() {
+        return board.size();
     }
 
     private void resize() {
@@ -89,14 +101,13 @@ public class Board {
             return false;
         }
 
+        moveCount++;
+
+        check(new Point(x, y));
+
         if (x == 0 || y == 0 || (x == board.size() - 1) || (y == board.size() - 1)) {
             resize();
         }
-
-        moveCount++;
-
-        // Check for a winner.
-        check(new Point(x, y));
 
         playersTurn = (playersTurn == State.X) ? State.O : State.X;
         return true;
@@ -215,5 +226,9 @@ public class Board {
             sb.append(System.lineSeparator());
         }
         return sb.toString();
+    }
+
+    public State getCell(int x, int y) {
+        return board.get(x).get(y);
     }
 }

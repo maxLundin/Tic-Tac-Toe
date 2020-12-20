@@ -2,21 +2,27 @@ package org.example;
 
 
 import org.example.ui.Board;
+import org.example.ui.Window;
 
 import java.io.IOException;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
-import java.util.Scanner;
-//import java.util.concurrent.ExecutorService;
 
 public class Server implements AutoCloseable {
     private final Board board = new Board();
-    //    private ExecutorService receiver;
     private DatagramSocket socket;
-    private final Scanner scanner = new Scanner(System.in);
     private static final String STATUS_OK = "Ok";
     private static final String STATUS_ERROR = "Error";
     private static final String STATUS_QUEST = "Play";
+    private final Transmitter transmitter;
+
+    public Server(Transmitter transmitter) {
+        this.transmitter = transmitter;
+    }
+
+    public Board getBoard() {
+        return board;
+    }
 
     private static String getResult(final DatagramPacket dp) {
         return new String(
@@ -37,22 +43,18 @@ public class Server implements AutoCloseable {
 
     private Board.Point getMove() {
         System.out.println("getPoints:");
-        int x = scanner.nextInt();
-        int y = scanner.nextInt();
-        return new Board.Point(x, y);
+        transmitter.setValid(true);
+        while (transmitter.getValid()) {
+        }
+        return transmitter.getPoint();
     }
 
-    private boolean ourMove(DatagramPacket packet) throws IOException {
-        boolean valid;
-        DatagramPacket dp;
+    private void ourMove(DatagramPacket packet) throws IOException {
 
-        do {
-            Board.Point move = getMove();
-            String msg = move.x + ":" + move.y;
-            dp = getDatagramPacket(msg.getBytes(StandardCharsets.UTF_8), packet.getSocketAddress());
+        Board.Point move = getMove();
+        final String msg = move.x + ":" + move.y;
+        DatagramPacket dp = getDatagramPacket(msg.getBytes(StandardCharsets.UTF_8), packet.getSocketAddress());
 
-            valid = board.move(move.x, move.y);
-        } while (!valid);
 
         socket.send(dp);
         socket.receive(packet);
@@ -64,26 +66,53 @@ public class Server implements AutoCloseable {
         }
         if (!received.equals(STATUS_OK)) {
             System.err.println(STATUS_ERROR);
-            return false;
+            throw new IllegalStateException("Desks unsynchronized");
         }
         if (board.isGameOver()) {
+            try {
+                Thread.sleep(1000, 1);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            board.reset();
             System.out.println(board.getWinner());
-            return false;
         }
-        return true;
     }
 
-    private boolean theirMove(DatagramPacket packet) throws IOException {
+    private void theirMove(DatagramPacket packet, Window windowInstance) throws IOException {
         socket.receive(packet);
         updateReceived(packet);
+        windowInstance.repaintPicture();
+
         if (board.isGameOver()) {
             System.out.println(board.getWinner());
-            return false;
         }
-        return true;
     }
 
-    public void start(int port, boolean first) {
+    private void acceptConnection(DatagramSocket socket, DatagramPacket packet) throws IOException {
+        do {
+            socket.receive(packet);
+        } while (!getResult(packet).equals(STATUS_QUEST));
+    }
+
+    private void establishConnection(DatagramSocket socket, DatagramPacket packet) throws IOException {
+        socket.setBroadcast(true);
+        byte[] buffer = STATUS_QUEST.getBytes();
+        DatagramPacket packetBroad
+                = new DatagramPacket(buffer, buffer.length, InetAddress.getByName("255.255.255.255"), socket.getLocalPort());
+        do {
+            socket.send(packetBroad);
+            socket.receive(packet);
+            String str;
+            do {
+                socket.receive(packet);
+                str = getResult(packet);
+            } while (STATUS_QUEST.equals(str));
+        } while (!getResult(packet).equals(STATUS_OK));
+        socket.setBroadcast(false);
+    }
+
+    public void start(int port, boolean first, Window windowInstance) {
         int bufSize;
         try {
             socket = new DatagramSocket(port);
@@ -94,68 +123,35 @@ public class Server implements AutoCloseable {
             return;
         }
         final DatagramPacket packet = getDatagramPacket(bufSize);
-        if (first) {
-            try {
-                do {
-                    socket.receive(packet);
-                } while (!getResult(packet).equals(STATUS_QUEST));
+        try {
+            if (first) {
+                acceptConnection(socket, packet);
+                windowInstance.setVisible(true);
                 DatagramPacket dp = getDatagramPacket(STATUS_OK.getBytes(StandardCharsets.UTF_8), packet.getSocketAddress());
                 socket.send(dp);
                 System.out.println("Game started with " + packet.getSocketAddress());
-
                 while (!socket.isClosed() && !Thread.currentThread().isInterrupted()) {
-                    boolean success;
-                    success = theirMove(packet);
-                    if (!success) break;
-                    System.out.println(board);
-                    success = ourMove(packet);
-                    if (!success) break;
-                    System.out.println(board);
+                    theirMove(packet, windowInstance);
+                    ourMove(packet);
                 }
-            } catch (PortUnreachableException e) {
-                System.err.println("Port unreachable on socket: " + socket.toString() + " with port " + port);
-            } catch (SocketException e) {
-                if (!socket.isClosed()) {
-                    System.err.println("Socket Exception on socket: " + socket.toString() + " with port " + port);
-                }
-            } catch (IOException e) {
-                System.err.println("IOException on socket: " + socket.toString() + " with port " + port);
-            }
-        } else {
-            try {
-                socket.setBroadcast(true);
-                byte[] buffer = STATUS_QUEST.getBytes();
-                DatagramPacket packetBroad
-                        = new DatagramPacket(buffer, buffer.length, InetAddress.getByName("255.255.255.255"), port);
-                do {
-                    socket.send(packetBroad);
-                    socket.receive(packet);
-                    String str;
-                    do {
-                        socket.receive(packet);
-                        str = getResult(packet);
-                    } while (STATUS_QUEST.equals(str));
-                } while (!getResult(packet).equals(STATUS_OK));
-                socket.setBroadcast(false);
+            } else {
+                establishConnection(socket, packet);
+                windowInstance.setVisible(true);
                 System.out.println("Connected game started:");
-                boolean success;
+                System.out.println(socket.isClosed() + " " + Thread.currentThread().isInterrupted());
                 while (!socket.isClosed() && !Thread.currentThread().isInterrupted()) {
-                    success = ourMove(packet);
-                    if (!success) break;
-                    System.out.println(board);
-                    success = theirMove(packet);
-                    if (!success) break;
-                    System.out.println(board);
+                    ourMove(packet);
+                    theirMove(packet, windowInstance);
                 }
-            } catch (PortUnreachableException e) {
-                System.err.println("Port unreachable on socket: " + socket.toString() + " with port " + port);
-            } catch (SocketException e) {
-                if (!socket.isClosed()) {
-                    System.err.println("Socket Exception on socket: " + socket.toString() + " with port " + port);
-                }
-            } catch (IOException e) {
-                System.err.println("IOException on socket: " + socket.toString() + " with port " + port);
             }
+        } catch (PortUnreachableException e) {
+            System.err.println("Port unreachable on socket: " + socket.toString() + " with port " + port);
+        } catch (SocketException e) {
+            if (!socket.isClosed()) {
+                System.err.println("Socket Exception on socket: " + socket.toString() + " with port " + port);
+            }
+        } catch (IOException e) {
+            System.err.println("IOException on socket: " + socket.toString() + " with port " + port);
         }
 
     }
@@ -165,7 +161,6 @@ public class Server implements AutoCloseable {
      */
     @Override
     public void close() {
-//        receiver.shutdownNow();
         socket.close();
     }
 
