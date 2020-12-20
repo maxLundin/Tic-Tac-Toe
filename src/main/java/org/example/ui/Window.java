@@ -70,8 +70,8 @@ public class Window extends JFrame {
 
         private void paintWinner(Graphics g) {
             if (board.isGameOver()) {
-                g.setColor(new Color(255, 255, 255));
-                g.setFont(new Font("TimesRoman", Font.PLAIN, 50));
+                g.setColor(new Color(10, 10, 10));
+                g.setFont(new Font("TimesRoman", Font.BOLD, 60));
 
                 String s;
 
