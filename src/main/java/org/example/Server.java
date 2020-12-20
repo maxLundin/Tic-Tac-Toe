@@ -8,6 +8,7 @@ import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Server implements AutoCloseable {
     private final Board board = new Board();
@@ -98,6 +99,7 @@ public class Server implements AutoCloseable {
     public void start(int port, boolean first) {
         int bufSize;
         try {
+            receiver = Executors.newSingleThreadExecutor();
             socket = new DatagramSocket(port);
             bufSize = socket.getReceiveBufferSize();
         } catch (SocketException e) {
