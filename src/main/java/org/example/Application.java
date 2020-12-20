@@ -1,5 +1,6 @@
 package org.example;
 
+import org.example.connections.SocketConnection;
 import org.example.ui.Window;
 
 import java.net.InetAddress;
@@ -19,14 +20,14 @@ public class Application {
             val = scanner.nextInt();
         }
 
-        try (Server server = new Server(transmitter)) {
+        try (Player server = new Player(transmitter, new SocketConnection())) {
             Window window = new Window(server.getBoard(), transmitter);
             switch (val) {
                 case 1:
-                    server.start(8090, false, window);
+                    server.start(false, window);
                     break;
                 case 2:
-                    server.start(8090, true, window);
+                    server.start(true, window);
                     break;
             }
             try {
