@@ -181,7 +181,7 @@ public class Server implements AutoCloseable {
         String status = board.move(x, y) ? STATUS_OK : STATUS_ERROR;
         final DatagramPacket sendDatagramPacket = getDatagramPacket(status.getBytes(StandardCharsets.UTF_8), dp.getSocketAddress());
         socket.send(sendDatagramPacket);
-        if (status.equals(STATUS_OK)) {
+        if (!status.equals(STATUS_OK)) {
             throw new IllegalStateException(STATUS_ERROR);
         }
     }
