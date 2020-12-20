@@ -15,7 +15,7 @@ public class Server implements AutoCloseable {
     private DatagramSocket socket;
     private Scanner scanner = new Scanner(System.in);
 
-    static String getResult(final DatagramPacket dp) {
+    private static String getResult(final DatagramPacket dp) {
         return new String(
                 dp.getData(),
                 dp.getOffset(),
@@ -23,24 +23,47 @@ public class Server implements AutoCloseable {
                 StandardCharsets.UTF_8);
     }
 
-    static DatagramPacket getDatagramPacket(int size) {
+    private static DatagramPacket getDatagramPacket(int size) {
         byte[] byteArray = new byte[size];
         return new DatagramPacket(byteArray, size);
     }
 
-    static DatagramPacket getDatagramPacket(final byte[] data, final SocketAddress address) {
+    private static DatagramPacket getDatagramPacket(final byte[] data, final SocketAddress address) {
         return new DatagramPacket(data, 0, data.length, address);
     }
 
-    public Board.Point getMove() {
+    private Board.Point getMove() {
         System.out.println("getPoints:");
         int x = scanner.nextInt();
         int y = scanner.nextInt();
         return new Board.Point(x, y);
     }
 
+    private boolean ourMove(DatagramPacket packet) throws IOException {
+        Board.Point move = getMove();
+        String msg = move.x + ":" + move.y;
+
+        DatagramPacket dp = getDatagramPacket(msg.getBytes(StandardCharsets.UTF_8), packet.getSocketAddress());
+        socket.send(dp);
+        board.move(move.x, move.y);
+        socket.receive(packet);
+        String received = getResult(packet);
+        while (!received.equals("Ok") && !received.equals("Error")) {
+            socket.receive(packet);
+            received = getResult(packet);
+        }
+        if (!received.equals("Ok")) {
+            System.err.println("Error!");
+            return false;
+        }
+        if (board.isGameOver()) {
+            System.out.println(board.getWinner());
+            return false;
+        }
+        return true;
+    }
+
     public void start(int port, boolean first) {
-//        receiver = Executors.newSingleThreadExecutor();
         int bufSize;
         try {
             socket = new DatagramSocket(port);
@@ -59,7 +82,6 @@ public class Server implements AutoCloseable {
                 String msg = "Ok";
                 DatagramPacket dp = getDatagramPacket(msg.getBytes(StandardCharsets.UTF_8), packet.getSocketAddress());
                 socket.send(dp);
-                socket.close();
                 System.out.println("Game started with " + packet.getSocketAddress());
             } catch (IOException e) {
                 e.printStackTrace();
@@ -73,22 +95,8 @@ public class Server implements AutoCloseable {
                         System.out.println(board.getWinner());
                         break;
                     }
-                    Board.Point move = getMove();
-                    String msg = move.x + ":" + move.y;
-                    DatagramPacket dp = getDatagramPacket(msg.getBytes(StandardCharsets.UTF_8), packet.getSocketAddress());
-                    socket.send(dp);
-                    board.move(move.x, move.y);
-                    System.out.println(board.toString());
-                    socket.receive(packet);
-                    String received = getResult(packet);
-                    if (!received.equals("Ok")) {
-                        System.err.println("Error!");
-                        break;
-                    }
-                    if (board.isGameOver()) {
-                        System.out.println(board.getWinner());
-                        break;
-                    }
+                    boolean success = ourMove(packet);
+                    if (!success) break;
                 } catch (PortUnreachableException e) {
                     System.err.println("Port unreachable on socket: " + socket.toString() + " with port " + port);
                 } catch (SocketException e) {
@@ -104,16 +112,20 @@ public class Server implements AutoCloseable {
             final DatagramPacket packet = getDatagramPacket(bufSize);
             try {
                 String msg = "Play";
-                DatagramSocket socketBroad = new DatagramSocket();
-                socketBroad.setBroadcast(true);
+                socket.setBroadcast(true);
                 byte[] buffer = msg.getBytes();
                 DatagramPacket packetBroad
-                        = new DatagramPacket(buffer, buffer.length, InetAddress.getByName("10.10.10.255"), port + 1);
+                        = new DatagramPacket(buffer, buffer.length, InetAddress.getByName("10.10.10.255"), port);
                 do {
-                    socketBroad.send(packetBroad);
-                    socketBroad.receive(packet);
+                    socket.send(packetBroad);
+                    socket.receive(packet);
+                    String str = getResult(packet);
+                    while ("Play".equals(str)) {
+                        socket.receive(packet);
+                        str = getResult(packet);
+                    }
                 } while (!getResult(packet).equals("Ok"));
-                socketBroad.close();
+                socket.setBroadcast(false);
                 System.out.println("Connected game started:");
             } catch (IOException e) {
                 e.printStackTrace();
@@ -123,22 +135,8 @@ public class Server implements AutoCloseable {
             while (!socket.isClosed() && !Thread.currentThread().isInterrupted()) {
                 try {
                     System.out.println(board.toString());
-                    Board.Point move = getMove();
-                    String msg = move.x + ":" + move.y;
-
-                    DatagramPacket dp = getDatagramPacket(msg.getBytes(StandardCharsets.UTF_8), packet.getSocketAddress());
-                    socket.send(dp);
-                    board.move(move.x, move.y);
-                    socket.receive(packet);
-                    String received = getResult(packet);
-                    if (!received.equals("Ok")) {
-                        System.err.println("Error!");
-                        break;
-                    }
-                    if (board.isGameOver()) {
-                        System.out.println(board.getWinner());
-                        break;
-                    }
+                    boolean success = ourMove(packet);
+                    if (!success) break;
                     System.out.println(board.toString());
                     socket.receive(packet);
                     runnableRun(packet);
