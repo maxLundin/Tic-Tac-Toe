@@ -55,12 +55,14 @@ public class Server implements AutoCloseable {
         if (first) {
             final DatagramPacket packet = getDatagramPacket(bufSize);
             try {
+                DatagramSocket socketInit = new DatagramSocket(port);
                 do {
-                    socket.receive(packet);
+                    socketInit.receive(packet);
                 } while (!getResult(packet).equals("Play"));
                 String msg = "Ok";
                 DatagramPacket dp = getDatagramPacket(msg.getBytes(StandardCharsets.UTF_8), packet.getSocketAddress());
-                socket.send(dp);
+                socketInit.send(dp);
+                socketInit.close();
                 System.out.println("Game started with " + packet.getSocketAddress());
             } catch (IOException e) {
                 e.printStackTrace();
@@ -109,7 +111,7 @@ public class Server implements AutoCloseable {
                 socketBroad.setBroadcast(true);
                 byte[] buffer = msg.getBytes();
                 DatagramPacket packetBroad
-                        = new DatagramPacket(buffer, buffer.length, InetAddress.getByName("255.255.255.255"), 8090);
+                        = new DatagramPacket(buffer, buffer.length, InetAddress.getByName("10.10.10.255"), port + 1);
                 do {
                     socketBroad.send(packetBroad);
                     socketBroad.receive(packet);

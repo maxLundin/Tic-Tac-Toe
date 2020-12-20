@@ -17,12 +17,12 @@ public class Application {
         switch (val) {
             case 1:
                 try (Server server = new Server()) {
-                    server.start(8090, false);
+                    server.start(8090, true);
                 }
                 break;
             case 2:
                 try (Server server = new Server()) {
-                    server.start(8090, true);
+                    server.start(8090, false);
                 }
                 break;
         }
