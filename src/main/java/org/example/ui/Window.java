@@ -16,6 +16,7 @@ public class Window extends JFrame {
     private Board board;
 
     private Window() {
+        board = new Board();
         panel = createPanel();
         setResizable(false);
         setSize(new Dimension(WIDTH, HEIGHT + 38));
@@ -33,6 +34,7 @@ public class Window extends JFrame {
         Panel panel = new Panel();
         Container cp = getContentPane();
         cp.add(panel);
+        panel.addMouseListener(new MyMouseAdapter());
         return panel;
     }
 
@@ -89,16 +91,46 @@ public class Window extends JFrame {
 
         @Override
         protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
             paintGrid(g);
             paintImages(g);
         }
     }
 
+    /**
+     * For detecting mouse clicks.
+     */
+    private class MyMouseAdapter extends MouseAdapter {
+        @Override
+        public void mousePressed(MouseEvent e) {
+            super.mouseClicked(e);
+
+            if (board.isGameOver()) {
+                System.out.println("ya popal");
+                board.reset();
+                panel.repaint();
+            } else {
+                playMove(e);
+            }
+
+        }
+
+        private Point toCellCoord(Point move) {
+            return new Point(move.y / getCellHeight(), move.x / getCellWidth());
+        }
+
+        private void playMove(MouseEvent e) {
+            Point move = toCellCoord(e.getPoint());
+
+            board.move(move.x, move.y);
+            panel.repaint();
+        }
+
+    }
+
+
     public static void main(String[] args) {
-        Board board = new Board();
-        board.move(1, 1);
-        board.move(0, 0);
-        SwingUtilities.invokeLater(() -> new Window(board));
+        SwingUtilities.invokeLater(Window::new);
     }
 
 }
