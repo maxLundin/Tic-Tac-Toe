@@ -2,19 +2,17 @@ package org.example;
 
 
 import org.example.ui.Board;
+import org.example.ui.Window;
 
 import java.io.IOException;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
-import java.util.Scanner;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+//import java.util.Scanner;
 
 public class Server implements AutoCloseable {
     private final Board board = new Board();
-    private ExecutorService receiver;
     private DatagramSocket socket;
-    private final Scanner scanner = new Scanner(System.in);
+    //    private final Scanner scanner = new Scanner(System.in);
     private static final String STATUS_OK = "Ok";
     private static final String STATUS_ERROR = "Error";
     private static final String STATUS_QUEST = "Play";
@@ -51,23 +49,14 @@ public class Server implements AutoCloseable {
         while (transmitter.getValid()) {
         }
         return transmitter.getPoint();
-
-//        int x = scanner.nextInt();
-//        int y = scanner.nextInt();
-//        return new Board.Point(x, y);
     }
 
     private boolean ourMove(DatagramPacket packet) throws IOException {
-        boolean valid;
-        DatagramPacket dp;
 
-        do {
-            Board.Point move = getMove();
-            String msg = move.x + ":" + move.y;
-            dp = getDatagramPacket(msg.getBytes(StandardCharsets.UTF_8), packet.getSocketAddress());
+        Board.Point move = getMove();
+        String msg = move.x + ":" + move.y;
+        DatagramPacket dp = getDatagramPacket(msg.getBytes(StandardCharsets.UTF_8), packet.getSocketAddress());
 
-            valid = board.move(move.x, move.y);
-        } while (!valid);
 
         socket.send(dp);
         socket.receive(packet);
@@ -88,8 +77,9 @@ public class Server implements AutoCloseable {
         return true;
     }
 
-    private boolean theirMove(DatagramPacket packet) throws IOException {
+    private boolean theirMove(DatagramPacket packet, Window windowInstance) throws IOException {
         socket.receive(packet);
+        windowInstance.repaintPicture();
         updateReceived(packet);
         if (board.isGameOver()) {
             System.out.println(board.getWinner());
@@ -98,7 +88,7 @@ public class Server implements AutoCloseable {
         return true;
     }
 
-    public void start(int port, boolean first) {
+    public void start(int port, boolean first, Window windowInstance) {
         int bufSize;
         try {
             socket = new DatagramSocket(port);
@@ -119,7 +109,7 @@ public class Server implements AutoCloseable {
                 System.out.println("Game started with " + packet.getSocketAddress());
                 while (!socket.isClosed() && !Thread.currentThread().isInterrupted()) {
                     boolean success;
-                    success = theirMove(packet);
+                    success = theirMove(packet, windowInstance);
                     if (!success) break;
                     System.out.println(board);
                     success = ourMove(packet);
@@ -161,7 +151,7 @@ public class Server implements AutoCloseable {
                     System.out.println("pizda");
                     if (!success) break;
                     System.out.println(board);
-                    success = theirMove(packet);
+                    success = theirMove(packet, windowInstance);
                     if (!success) break;
                     System.out.println(board);
                 }

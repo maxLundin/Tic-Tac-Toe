@@ -7,14 +7,13 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
 public class Window extends JFrame {
     private static final int WIDTH = 600;
     private static final int HEIGHT = 600;
-    private Panel panel;
+    private final Panel panel;
     private Board board;
     private final Transmitter transmitter;
 
@@ -40,6 +39,10 @@ public class Window extends JFrame {
         cp.add(panel);
         panel.addMouseListener(new MyMouseAdapter());
         return panel;
+    }
+
+    public void repaintPicture() {
+        panel.repaint();
     }
 
     private int getCellWidth() {
@@ -111,7 +114,6 @@ public class Window extends JFrame {
                 return;
             }
             super.mouseClicked(e);
-            System.out.println("ya popal");
             if (board.isGameOver()) {
 
                 board.reset();
