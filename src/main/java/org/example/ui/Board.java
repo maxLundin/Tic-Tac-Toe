@@ -101,13 +101,13 @@ public class Board {
             return false;
         }
 
-        if (x == 0 || y == 0 || (x == board.size() - 1) || (y == board.size() - 1)) {
-            resize();
-        }
-
         moveCount++;
 
         check(new Point(x, y));
+
+        if (x == 0 || y == 0 || (x == board.size() - 1) || (y == board.size() - 1)) {
+            resize();
+        }
 
         playersTurn = (playersTurn == State.X) ? State.O : State.X;
         return true;

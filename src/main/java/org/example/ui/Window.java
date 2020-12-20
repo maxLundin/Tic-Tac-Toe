@@ -118,6 +118,7 @@ public class Window extends JFrame {
             super.paintComponent(g);
             paintGrid(g);
             paintImages(g);
+            paintWinner(g);
         }
     }
 

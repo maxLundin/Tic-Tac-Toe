@@ -52,7 +52,7 @@ public class Server implements AutoCloseable {
     private boolean ourMove(DatagramPacket packet) throws IOException {
 
         Board.Point move = getMove();
-        String msg = move.x + ":" + move.y;
+        final String msg = move.x + ":" + move.y;
         DatagramPacket dp = getDatagramPacket(msg.getBytes(StandardCharsets.UTF_8), packet.getSocketAddress());
 
 
