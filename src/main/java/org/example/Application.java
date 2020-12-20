@@ -1,6 +1,10 @@
 package org.example;
 
 import org.example.connections.SocketConnection;
+import org.example.players.human.HumanPlayer;
+import org.example.players.Player;
+import org.example.players.human.Transmitter;
+import org.example.ui.Board;
 import org.example.ui.Window;
 
 import java.net.InetAddress;
@@ -20,14 +24,15 @@ public class Application {
             val = scanner.nextInt();
         }
 
-        try (Player server = new Player(transmitter, new SocketConnection())) {
-            Window window = new Window(server.getBoard(), transmitter);
+        Board board = new Board();
+        Window window = new Window(board, transmitter);
+        try (Player server = new HumanPlayer(new SocketConnection(), transmitter, window)) {
             switch (val) {
                 case 1:
-                    server.start(false, window);
+                    server.start(false);
                     break;
                 case 2:
-                    server.start(true, window);
+                    server.start(true);
                     break;
             }
             try {
