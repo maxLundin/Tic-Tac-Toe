@@ -95,7 +95,7 @@ public class Window extends JFrame {
 
         private void drawCell(Graphics g, int x, int y, String path) {
             int minCellHeight = getCellHeight() * x;
-            int minCellWidth = getCellWidth() * (y);
+            int minCellWidth = getCellWidth() * y;
 
             g.drawImage(getImage(path), minCellWidth, minCellHeight, getCellWidth(), getCellHeight(), null);
         }
@@ -133,9 +133,9 @@ public class Window extends JFrame {
             }
             super.mouseClicked(e);
             if (board.isGameOver()) {
-
                 board.reset();
                 panel.repaint();
+                return;
             } else {
                 Board.Point point = playMove(e);
                 if (point == null) {

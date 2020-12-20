@@ -10,7 +10,7 @@ import java.util.function.Function;
 public class Board {
 
     static final int INIT_BOARD_SIZE = 10;
-    static final int DIFF_BOARD_SIZE = 5;
+    static final int DIFF_BOARD_SIZE = 3;
     static final int WIN_VALUE = 5;
 
     public enum State {Blank, X, O}

@@ -69,6 +69,11 @@ public class Server implements AutoCloseable {
             throw new IllegalStateException("Desks unsynchronized");
         }
         if (board.isGameOver()) {
+            try {
+                Thread.sleep(1000, 1);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             board.reset();
             System.out.println(board.getWinner());
         }
@@ -78,8 +83,8 @@ public class Server implements AutoCloseable {
         socket.receive(packet);
         updateReceived(packet);
         windowInstance.repaintPicture();
+
         if (board.isGameOver()) {
-            board.reset();
             System.out.println(board.getWinner());
         }
     }
