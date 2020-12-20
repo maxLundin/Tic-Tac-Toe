@@ -118,6 +118,9 @@ public class Window extends JFrame {
                 panel.repaint();
             } else {
                 Board.Point point = playMove(e);
+                if (point == null) {
+                    return;
+                }
                 transmitter.setPoint(point);
             }
             transmitter.setValid(false);
@@ -130,7 +133,9 @@ public class Window extends JFrame {
         private Board.Point playMove(MouseEvent e) {
             Board.Point move = toCellCoord(e.getPoint());
 
-            board.move(move.x, move.y);
+            if (!board.move(move.x, move.y)) {
+                return null;
+            }
             panel.repaint();
             return move;
         }
