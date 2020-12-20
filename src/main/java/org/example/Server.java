@@ -7,16 +7,21 @@ import java.io.IOException;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
-//import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ExecutorService;
 
 public class Server implements AutoCloseable {
     private final Board board = new Board();
-    //    private ExecutorService receiver;
+    private ExecutorService receiver;
     private DatagramSocket socket;
     private final Scanner scanner = new Scanner(System.in);
     private static final String STATUS_OK = "Ok";
     private static final String STATUS_ERROR = "Error";
     private static final String STATUS_QUEST = "Play";
+    private final Transmitter transmitter;
+
+    public Server(Transmitter transmitter) {
+        this.transmitter = transmitter;
+    }
 
     private static String getResult(final DatagramPacket dp) {
         return new String(
@@ -35,14 +40,21 @@ public class Server implements AutoCloseable {
         return new DatagramPacket(data, 0, data.length, address);
     }
 
-    private Board.Point getMove() {
+    private Board.Point getMove() throws InterruptedException {
         System.out.println("getPoints:");
-        int x = scanner.nextInt();
-        int y = scanner.nextInt();
-        return new Board.Point(x, y);
+        transmitter.setValid(true);
+        transmitter.wait(10,0);
+        if (!transmitter.getValid()) {
+            throw new IllegalStateException(STATUS_ERROR);
+        }
+        return transmitter.getPoint();
+
+//        int x = scanner.nextInt();
+//        int y = scanner.nextInt();
+//        return new Board.Point(x, y);
     }
 
-    private boolean ourMove(DatagramPacket packet) throws IOException {
+    private boolean ourMove(DatagramPacket packet) throws IOException, InterruptedException {
         boolean valid;
         DatagramPacket dp;
 
@@ -102,16 +114,6 @@ public class Server implements AutoCloseable {
                 DatagramPacket dp = getDatagramPacket(STATUS_OK.getBytes(StandardCharsets.UTF_8), packet.getSocketAddress());
                 socket.send(dp);
                 System.out.println("Game started with " + packet.getSocketAddress());
-
-                while (!socket.isClosed() && !Thread.currentThread().isInterrupted()) {
-                    boolean success;
-                    success = theirMove(packet);
-                    if (!success) break;
-                    System.out.println(board);
-                    success = ourMove(packet);
-                    if (!success) break;
-                    System.out.println(board);
-                }
             } catch (PortUnreachableException e) {
                 System.err.println("Port unreachable on socket: " + socket.toString() + " with port " + port);
             } catch (SocketException e) {
@@ -121,6 +123,30 @@ public class Server implements AutoCloseable {
             } catch (IOException e) {
                 System.err.println("IOException on socket: " + socket.toString() + " with port " + port);
             }
+            receiver.submit(() -> {
+                try {
+                    while (!socket.isClosed() && !Thread.currentThread().isInterrupted()) {
+                        boolean success;
+                        success = theirMove(packet);
+                        if (!success) break;
+                        System.out.println(board);
+                        success = ourMove(packet);
+                        if (!success) break;
+                        System.out.println(board);
+                    }
+                } catch (PortUnreachableException e) {
+                    System.err.println("Port unreachable on socket: " + socket.toString() + " with port " + port);
+                } catch (SocketException e) {
+                    if (!socket.isClosed()) {
+                        System.err.println("Socket Exception on socket: " + socket.toString() + " with port " + port);
+                    }
+                } catch (IOException e) {
+                    System.err.println("IOException on socket: " + socket.toString() + " with port " + port);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            });
+
         } else {
             try {
                 socket.setBroadcast(true);
@@ -138,15 +164,6 @@ public class Server implements AutoCloseable {
                 } while (!getResult(packet).equals(STATUS_OK));
                 socket.setBroadcast(false);
                 System.out.println("Connected game started:");
-                boolean success;
-                while (!socket.isClosed() && !Thread.currentThread().isInterrupted()) {
-                    success = ourMove(packet);
-                    if (!success) break;
-                    System.out.println(board);
-                    success = theirMove(packet);
-                    if (!success) break;
-                    System.out.println(board);
-                }
             } catch (PortUnreachableException e) {
                 System.err.println("Port unreachable on socket: " + socket.toString() + " with port " + port);
             } catch (SocketException e) {
@@ -156,6 +173,29 @@ public class Server implements AutoCloseable {
             } catch (IOException e) {
                 System.err.println("IOException on socket: " + socket.toString() + " with port " + port);
             }
+            receiver.submit(() -> {
+                try {
+                    boolean success;
+                    while (!socket.isClosed() && !Thread.currentThread().isInterrupted()) {
+                        success = ourMove(packet);
+                        if (!success) break;
+                        System.out.println(board);
+                        success = theirMove(packet);
+                        if (!success) break;
+                        System.out.println(board);
+                    }
+                } catch (PortUnreachableException e) {
+                    System.err.println("Port unreachable on socket: " + socket.toString() + " with port " + port);
+                } catch (SocketException e) {
+                    if (!socket.isClosed()) {
+                        System.err.println("Socket Exception on socket: " + socket.toString() + " with port " + port);
+                    }
+                } catch (IOException e) {
+                    System.err.println("IOException on socket: " + socket.toString() + " with port " + port);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            });
         }
 
     }
@@ -165,7 +205,7 @@ public class Server implements AutoCloseable {
      */
     @Override
     public void close() {
-//        receiver.shutdownNow();
+        receiver.shutdownNow();
         socket.close();
     }
 

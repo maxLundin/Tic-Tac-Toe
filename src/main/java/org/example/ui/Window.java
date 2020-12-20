@@ -1,5 +1,7 @@
 package org.example.ui;
 
+import org.example.Transmitter;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
@@ -14,8 +16,10 @@ public class Window extends JFrame {
     private static final int HEIGHT = 600;
     private Panel panel;
     private Board board;
+    private final Transmitter transmitter;
 
-    private Window() {
+    public Window(Transmitter transmitter) {
+        this.transmitter = transmitter;
         board = new Board();
         panel = createPanel();
         setResizable(false);
@@ -25,8 +29,8 @@ public class Window extends JFrame {
         setVisible(true);
     }
 
-    private Window(Board board) {
-        this();
+    private Window(Board board, Transmitter transmitter) {
+        this(transmitter);
         this.board = board;
     }
 
@@ -103,6 +107,9 @@ public class Window extends JFrame {
     private class MyMouseAdapter extends MouseAdapter {
         @Override
         public void mousePressed(MouseEvent e) {
+            if (!transmitter.getValid()) {
+                return;
+            }
             super.mouseClicked(e);
 
             if (board.isGameOver()) {
@@ -110,27 +117,31 @@ public class Window extends JFrame {
                 board.reset();
                 panel.repaint();
             } else {
-                playMove(e);
+                Board.Point point = playMove(e);
+                transmitter.setPoint(point);
             }
-
+            transmitter.setValid(false);
+            transmitter.notify();
         }
 
-        private Point toCellCoord(Point move) {
-            return new Point(move.y / getCellHeight(), move.x / getCellWidth());
+        private Board.Point toCellCoord(Point move) {
+            return new Board.Point(move.y / getCellHeight(), move.x / getCellWidth());
         }
 
-        private void playMove(MouseEvent e) {
-            Point move = toCellCoord(e.getPoint());
+        private Board.Point playMove(MouseEvent e) {
+            Board.Point move = toCellCoord(e.getPoint());
 
             board.move(move.x, move.y);
             panel.repaint();
+            return move;
         }
 
     }
 
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(Window::new);
-    }
+//    public static void main(String[] args) {
+//
+//        SwingUtilities.invokeLater(Window::new);
+//    }
 
 }

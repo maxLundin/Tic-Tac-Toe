@@ -1,11 +1,15 @@
 package org.example;
 
+import org.example.ui.Window;
+
+import javax.swing.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Scanner;
 
 public class Application {
     public static void main(String[] args) {
+        Transmitter transmitter = new Transmitter();
         System.out.println("Hello!");
         int val = 0;
         Scanner scanner = new Scanner(System.in);
@@ -16,12 +20,12 @@ public class Application {
         }
         switch (val) {
             case 1:
-                try (Server server = new Server()) {
+                try (Server server = new Server(transmitter)) {
                     server.start(8090, false);
                 }
                 break;
             case 2:
-                try (Server server = new Server()) {
+                try (Server server = new Server(transmitter)) {
                     server.start(8090, true);
                 }
                 break;
@@ -33,5 +37,6 @@ public class Application {
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }
+        SwingUtilities.invokeLater(() -> new Window(transmitter));
     }
 }
