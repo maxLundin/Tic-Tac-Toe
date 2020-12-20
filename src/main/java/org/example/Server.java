@@ -3,13 +3,11 @@ package org.example;
 
 import org.example.ui.Board;
 
-import java.awt.*;
 import java.io.IOException;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class Server implements AutoCloseable {
     private final Board board = new Board();
@@ -55,17 +53,14 @@ public class Server implements AutoCloseable {
         if (first) {
             final DatagramPacket packet = getDatagramPacket(bufSize);
             try {
-                DatagramSocket socketInit = new DatagramSocket(port + 1);
-                int initBufSize = socketInit.getReceiveBufferSize();
-                final DatagramPacket InitPacket = getDatagramPacket(initBufSize);
                 do {
-                    socketInit.receive(InitPacket);
-                } while (!getResult(InitPacket).equals("Play"));
+                    socket.receive(packet);
+                } while (!getResult(packet).equals("Play"));
                 String msg = "Ok";
-                DatagramPacket dp = getDatagramPacket(msg.getBytes(StandardCharsets.UTF_8), InitPacket.getSocketAddress());
-                socketInit.send(dp);
-                socketInit.close();
-                System.out.println("Game started with " + InitPacket.getSocketAddress());
+                DatagramPacket dp = getDatagramPacket(msg.getBytes(StandardCharsets.UTF_8), packet.getSocketAddress());
+                socket.send(dp);
+                socket.close();
+                System.out.println("Game started with " + packet.getSocketAddress());
             } catch (IOException e) {
                 e.printStackTrace();
             }
