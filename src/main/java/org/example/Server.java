@@ -7,12 +7,10 @@ import org.example.ui.Window;
 import java.io.IOException;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
-//import java.util.Scanner;
 
 public class Server implements AutoCloseable {
     private final Board board = new Board();
     private DatagramSocket socket;
-    //    private final Scanner scanner = new Scanner(System.in);
     private static final String STATUS_OK = "Ok";
     private static final String STATUS_ERROR = "Error";
     private static final String STATUS_QUEST = "Play";
@@ -98,7 +96,7 @@ public class Server implements AutoCloseable {
         socket.setBroadcast(true);
         byte[] buffer = STATUS_QUEST.getBytes();
         DatagramPacket packetBroad
-                = new DatagramPacket(buffer, buffer.length, InetAddress.getByName("255.255.255.255"), socket.getPort());
+                = new DatagramPacket(buffer, buffer.length, InetAddress.getByName("255.255.255.255"), socket.getLocalPort());
         do {
             socket.send(packetBroad);
             socket.receive(packet);
@@ -166,7 +164,6 @@ public class Server implements AutoCloseable {
      */
     @Override
     public void close() {
-        System.out.println("Pizdes");
         socket.close();
     }
 

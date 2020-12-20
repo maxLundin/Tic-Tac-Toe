@@ -5,10 +5,12 @@ import org.example.ui.Board;
 public class Transmitter {
     private static class BoolHolder {
         public boolean val;
+
         BoolHolder(boolean val) {
             this.val = val;
         }
     }
+
     BoolHolder valid = new BoolHolder(Boolean.FALSE);
     Board.Point point = null;
 

@@ -107,7 +107,6 @@ public class Board {
 
         moveCount++;
 
-        // Check for a winner.
         check(new Point(x, y));
 
         playersTurn = (playersTurn == State.X) ? State.O : State.X;
