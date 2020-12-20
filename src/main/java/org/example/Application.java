@@ -18,25 +18,23 @@ public class Application {
             System.out.println("New game? - 2");
             val = scanner.nextInt();
         }
-        switch (val) {
-            case 1:
-                try (Server server = new Server(transmitter)) {
+        try (Server server = new Server(transmitter)) {
+            switch (val) {
+                case 1:
                     server.start(8090, false);
-                }
-                break;
-            case 2:
-                try (Server server = new Server(transmitter)) {
+                    break;
+                case 2:
                     server.start(8090, true);
-                }
-                break;
+                    break;
+            }
+            try {
+                String[] inet = InetAddress.getLocalHost().toString().split("/");
+                String address = inet[inet.length - 1];
+                System.out.println(address);
+            } catch (UnknownHostException e) {
+                e.printStackTrace();
+            }
+            SwingUtilities.invokeLater(() -> new Window(transmitter));
         }
-        try {
-            String[] inet = InetAddress.getLocalHost().toString().split("/");
-            String address = inet[inet.length - 1];
-            System.out.println(address);
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
-        SwingUtilities.invokeLater(() -> new Window(transmitter));
     }
 }

@@ -121,7 +121,6 @@ public class Window extends JFrame {
                 transmitter.setPoint(point);
             }
             transmitter.setValid(false);
-            transmitter.notify();
         }
 
         private Board.Point toCellCoord(Point move) {

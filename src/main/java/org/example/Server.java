@@ -41,12 +41,10 @@ public class Server implements AutoCloseable {
         return new DatagramPacket(data, 0, data.length, address);
     }
 
-    private Board.Point getMove() throws InterruptedException {
+    private Board.Point getMove() {
         System.out.println("getPoints:");
         transmitter.setValid(true);
-        transmitter.wait(10,0);
-        if (!transmitter.getValid()) {
-            throw new IllegalStateException(STATUS_ERROR);
+        while (!transmitter.getValid()) {
         }
         return transmitter.getPoint();
 
@@ -55,7 +53,7 @@ public class Server implements AutoCloseable {
 //        return new Board.Point(x, y);
     }
 
-    private boolean ourMove(DatagramPacket packet) throws IOException, InterruptedException {
+    private boolean ourMove(DatagramPacket packet) throws IOException {
         boolean valid;
         DatagramPacket dp;
 
@@ -144,8 +142,6 @@ public class Server implements AutoCloseable {
                     }
                 } catch (IOException e) {
                     System.err.println("IOException on socket: " + socket.toString() + " with port " + port);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
                 }
             });
 
@@ -178,8 +174,11 @@ public class Server implements AutoCloseable {
             receiver.submit(() -> {
                 try {
                     boolean success;
+                    System.out.println(socket.isClosed() + " " + Thread.currentThread().isInterrupted());
                     while (!socket.isClosed() && !Thread.currentThread().isInterrupted()) {
+                        System.out.println("pidor");
                         success = ourMove(packet);
+                        System.out.println("pizda");
                         if (!success) break;
                         System.out.println(board);
                         success = theirMove(packet);
@@ -194,8 +193,6 @@ public class Server implements AutoCloseable {
                     }
                 } catch (IOException e) {
                     System.err.println("IOException on socket: " + socket.toString() + " with port " + port);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
                 }
             });
         }
@@ -207,6 +204,7 @@ public class Server implements AutoCloseable {
      */
     @Override
     public void close() {
+        System.out.println("Pizdes");
         receiver.shutdownNow();
         socket.close();
     }
