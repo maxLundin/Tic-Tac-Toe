@@ -25,7 +25,6 @@ public class Window extends JFrame {
         setSize(new Dimension(WIDTH, HEIGHT + 38));
         setTitle("PPO Tic Tac Toe");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setVisible(true);
     }
 
     public Window(Board board, Transmitter transmitter) {

@@ -2,22 +2,11 @@ package org.example;
 
 import org.example.ui.Window;
 
-import javax.swing.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Scanner;
 
 public class Application {
-    private static Transmitter transmitter = new Transmitter();
-    private static Server server = new Server(transmitter);
-    private static Window window;
-
-    public static Window getWindowInstance() {
-        if (window == null) {
-            window = new Window(server.getBoard(), transmitter);
-        }
-        return window;
-    }
 
     public static void main(String[] args) {
         Transmitter transmitter = new Transmitter();
@@ -30,16 +19,14 @@ public class Application {
             val = scanner.nextInt();
         }
 
-//        try (server = new Server(transmitter)) {
-//        try {
-//            final Window window = new Window(server.getBoard(), transmitter);
-            SwingUtilities.invokeLater(Application::getWindowInstance);
+        try (Server server = new Server(transmitter)) {
+            Window window = new Window(server.getBoard(), transmitter);
             switch (val) {
                 case 1:
-                    server.start(8090, false, getWindowInstance());
+                    server.start(8090, false, window);
                     break;
                 case 2:
-                    server.start(8090, true, getWindowInstance());
+                    server.start(8090, true, window);
                     break;
             }
             try {
@@ -49,6 +36,6 @@ public class Application {
             } catch (UnknownHostException e) {
                 e.printStackTrace();
             }
-//        }
+        }
     }
 }
