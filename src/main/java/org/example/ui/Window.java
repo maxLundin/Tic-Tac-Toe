@@ -64,6 +64,24 @@ public class Window extends JFrame {
 
     private class Panel extends JPanel {
 
+        private void paintWinner(Graphics g) {
+            if (board.isGameOver()) {
+                g.setColor(new Color(255, 255, 255));
+                g.setFont(new Font("TimesRoman", Font.PLAIN, 50));
+
+                String s;
+
+                if (board.getWinner() == Board.State.Blank) {
+                    s = "Draw";
+                } else {
+                    s = board.getWinner() + " Wins!";
+                }
+
+                g.drawString(s, 300 - getFontMetrics(g.getFont()).stringWidth(s)/2, 315);
+
+            }
+        }
+
         private void paintGrid(Graphics g) {
             int cellHeight = getCellHeight();
             int cellWidth = getCellWidth();
