@@ -24,6 +24,10 @@ public class Server implements AutoCloseable {
         this.transmitter = transmitter;
     }
 
+    public Board getBoard() {
+        return board;
+    }
+
     private static String getResult(final DatagramPacket dp) {
         return new String(
                 dp.getData(),
@@ -44,7 +48,7 @@ public class Server implements AutoCloseable {
     private Board.Point getMove() {
         System.out.println("getPoints:");
         transmitter.setValid(true);
-        while (!transmitter.getValid()) {
+        while (transmitter.getValid()) {
         }
         return transmitter.getPoint();
 

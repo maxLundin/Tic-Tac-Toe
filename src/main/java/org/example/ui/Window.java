@@ -29,7 +29,7 @@ public class Window extends JFrame {
         setVisible(true);
     }
 
-    private Window(Board board, Transmitter transmitter) {
+    public Window(Board board, Transmitter transmitter) {
         this(transmitter);
         this.board = board;
     }
@@ -111,9 +111,9 @@ public class Window extends JFrame {
                 return;
             }
             super.mouseClicked(e);
-
+            System.out.println("ya popal");
             if (board.isGameOver()) {
-                System.out.println("ya popal");
+
                 board.reset();
                 panel.repaint();
             } else {

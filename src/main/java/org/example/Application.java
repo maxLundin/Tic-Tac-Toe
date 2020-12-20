@@ -19,9 +19,9 @@ public class Application {
             System.out.println("New game? - 2");
             val = scanner.nextInt();
         }
-        SwingUtilities.invokeLater(() -> new Window(transmitter));
 
         try (Server server = new Server(transmitter)) {
+            SwingUtilities.invokeLater(() -> new Window(server.getBoard(), transmitter));
             switch (val) {
                 case 1:
                     server.start(8090, false);
