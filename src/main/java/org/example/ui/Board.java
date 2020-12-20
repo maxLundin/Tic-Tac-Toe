@@ -22,10 +22,7 @@ public class Board {
     private int moveCount;
     private boolean gameOver;
 
-    /**
-     * Construct the Tic Tac Toe board.
-     */
-    public Board() {
+    private void initBoard() {
         board = new ArrayList<>(INIT_BOARD_SIZE);
         for (int row = 0; row < INIT_BOARD_SIZE; row++) {
             board.add(new ArrayList<>(INIT_BOARD_SIZE));
@@ -38,6 +35,18 @@ public class Board {
         winner = State.Blank;
         playersTurn = State.X;
     }
+
+    /**
+     * Construct the Tic Tac Toe board.
+     */
+    public Board() {
+        initBoard();
+    }
+
+    public void reset() {
+        initBoard();
+    }
+
 
     private void resize() {
         int newSize = board.size() + 2 * DIFF_BOARD_SIZE;
