@@ -3,6 +3,7 @@ package org.example;
 import org.example.ui.Window;
 
 import javax.swing.*;
+import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Scanner;
@@ -18,6 +19,8 @@ public class Application {
             System.out.println("New game? - 2");
             val = scanner.nextInt();
         }
+        SwingUtilities.invokeLater(() -> new Window(transmitter));
+
         try (Server server = new Server(transmitter)) {
             switch (val) {
                 case 1:
@@ -34,7 +37,6 @@ public class Application {
             } catch (UnknownHostException e) {
                 e.printStackTrace();
             }
-            SwingUtilities.invokeLater(() -> new Window(transmitter));
         }
     }
 }
