@@ -10,10 +10,10 @@ class AI(Player):
         Player.__init__(self, name, symbol)
         #initilise intelligence co-efficients
         self.co1 = 34
-        self.co2 = 28
-        self.co3 = 18
-        self.co4 = 8
-        self.co5 = 10
+        self.co2 = 33
+        self.co3 = 1
+        self.co4 = 2
+        self.co5 = 20
         if self.symbol == 'X':
             self.opponent = 'O'
         else:
