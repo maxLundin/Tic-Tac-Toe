@@ -19,6 +19,8 @@ public class BotPlayer extends Player {
     @Override
     protected Board.Point getMove() {
         System.out.println("getPoints:");
-        return bot.decide(board);
+        Board.Point move = bot.decide(board);
+        board.move(move.x, move.y);
+        return move;
     }
 }

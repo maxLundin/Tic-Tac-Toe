@@ -4,6 +4,7 @@ import org.example.connections.BotConnection;
 import org.example.connections.SocketConnection;
 import org.example.players.bot.Bot;
 import org.example.players.bot.BotPlayer;
+import org.example.players.bot.RandomBot;
 import org.example.players.human.HumanPlayer;
 import org.example.players.Player;
 import org.example.players.human.Transmitter;
@@ -28,21 +29,25 @@ public class Application {
             val = scanner.nextInt();
         }
 
-        Board board = new Board();
-        Window window = new Window(board, transmitter);
-
         if (val == 3) {
-            BotConnection connection = new BotConnection();
+            BotConnection firstConnection = new BotConnection();
+            BotConnection secondConnection = new BotConnection();
+            firstConnection.setOtherConnection(secondConnection, "1");
+            secondConnection.setOtherConnection(firstConnection, "2");
 
-            // Тут вставь своих ботов
-            Bot bot = null;
+            Bot bot = new RandomBot();
 
-            //Возможно нужно поменять true и false местами, надо тестить
-            Player botPlayer = new BotPlayer(bot, connection, window.getBoard());
-            botPlayer.start(true);
-            Player server = new HumanPlayer(connection, transmitter, window);
-            server.start(false);
+            Board firstBoard = new Board();
+            Player firstPlayer = new BotPlayer(bot, firstConnection, firstBoard);
+            new Thread(() -> firstPlayer.start(true)).start();
+
+            Board secondBoard = new Board();
+            Window secondWindow = new Window(secondBoard, transmitter);
+            Player secondPlayer = new HumanPlayer(secondConnection, transmitter, secondWindow);
+            secondPlayer.start(false);
         } else {
+            Board board = new Board();
+            Window window = new Window(board, transmitter);
             try (Player server = new HumanPlayer(new SocketConnection(), transmitter, window)) {
                 switch (val) {
                     case 1:
