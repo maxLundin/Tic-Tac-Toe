@@ -4,12 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
+import static java.lang.Integer.min;
+
 /**
  * Represents the Tic Tac Toe board.
  */
 public class Board {
 
-    static final int INIT_BOARD_SIZE = 5;
+    static final int MAX_BOARD_SIZE = 22;
+    static final int INIT_BOARD_SIZE = 10;
     static final int DIFF_BOARD_SIZE = 3;
     static final int WIN_VALUE = 5;
 
@@ -52,7 +55,7 @@ public class Board {
     }
 
     private void resize() {
-        int newSize = board.size() + 2 * DIFF_BOARD_SIZE;
+        int newSize = min(MAX_BOARD_SIZE, board.size() + 2 * DIFF_BOARD_SIZE);
         List<List<State>> boardTmp = new ArrayList<>(newSize);
         for (int row = 0; row < newSize; row++) {
             boardTmp.add(new ArrayList<>(newSize));
