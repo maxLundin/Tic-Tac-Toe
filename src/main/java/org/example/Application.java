@@ -36,7 +36,19 @@ public class Application {
             firstConnection.setOtherConnection(secondConnection, "1");
             secondConnection.setOtherConnection(firstConnection, "2");
 
-            Bot bot = new GoodBot();
+            int valBot = 0;
+            while (valBot != 1 && valBot != 2) {
+                System.out.println("Select Bot Mode");
+                System.out.println("Easy? - 1");
+                System.out.println("Hard? - 2");
+                valBot = scanner.nextInt();
+            }
+            Bot bot;
+            if (valBot == 1) {
+                bot = new RandomBot();
+            } else {
+                bot = new GoodBot();
+            }
 
             Board firstBoard = new Board();
             Player firstPlayer = new BotPlayer(bot, firstConnection, firstBoard);
