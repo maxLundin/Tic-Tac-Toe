@@ -36,7 +36,7 @@ public class Application {
             firstConnection.setOtherConnection(secondConnection, "1");
             secondConnection.setOtherConnection(firstConnection, "2");
 
-            Bot bot = new RandomBot();
+            Bot bot = new GoodBot();
 
             Board firstBoard = new Board();
             Player firstPlayer = new BotPlayer(bot, firstConnection, firstBoard);
