@@ -4,6 +4,7 @@ import org.example.connections.BotConnection;
 import org.example.connections.SocketConnection;
 import org.example.players.bot.Bot;
 import org.example.players.bot.BotPlayer;
+import org.example.players.bot.GoodBot;
 import org.example.players.bot.RandomBot;
 import org.example.players.human.HumanPlayer;
 import org.example.players.Player;
