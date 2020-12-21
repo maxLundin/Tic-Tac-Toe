@@ -7,7 +7,7 @@ import org.example.ui.Board;
 public class BotPlayer extends Player {
     private final Bot bot;
 
-    BotPlayer(Bot bot, Connection connection, Board board) {
+    public BotPlayer(Bot bot, Connection connection, Board board) {
         super(connection, board);
         this.bot = bot;
     }
