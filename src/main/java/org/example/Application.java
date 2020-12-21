@@ -40,24 +40,25 @@ public class Application {
             //Возможно нужно поменять true и false местами, надо тестить
             Player botPlayer = new BotPlayer(bot, connection, window.getBoard());
             botPlayer.start(true);
-            Player server = new HumanPlayer(new BotConnection(), transmitter, window);
+            Player server = new HumanPlayer(connection, transmitter, window);
             server.start(false);
-        }
-        try (Player server = new HumanPlayer(new SocketConnection(), transmitter, window)) {
-            switch (val) {
-                case 1:
-                    server.start(false);
-                    break;
-                case 2:
-                    server.start(true);
-                    break;
-            }
-            try {
-                String[] inet = InetAddress.getLocalHost().toString().split("/");
-                String address = inet[inet.length - 1];
-                System.out.println(address);
-            } catch (UnknownHostException e) {
-                e.printStackTrace();
+        } else {
+            try (Player server = new HumanPlayer(new SocketConnection(), transmitter, window)) {
+                switch (val) {
+                    case 1:
+                        server.start(false);
+                        break;
+                    case 2:
+                        server.start(true);
+                        break;
+                }
+                try {
+                    String[] inet = InetAddress.getLocalHost().toString().split("/");
+                    String address = inet[inet.length - 1];
+                    System.out.println(address);
+                } catch (UnknownHostException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
