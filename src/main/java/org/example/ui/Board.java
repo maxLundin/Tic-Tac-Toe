@@ -4,11 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
+import static java.lang.Integer.min;
+
 /**
  * Represents the Tic Tac Toe board.
  */
 public class Board {
 
+    static final int MAX_BOARD_SIZE = 22;
     static final int INIT_BOARD_SIZE = 10;
     static final int DIFF_BOARD_SIZE = 3;
     static final int WIN_VALUE = 5;
@@ -52,7 +55,7 @@ public class Board {
     }
 
     private void resize() {
-        int newSize = board.size() + 2 * DIFF_BOARD_SIZE;
+        int newSize = min(MAX_BOARD_SIZE, board.size() + 2 * DIFF_BOARD_SIZE);
         List<List<State>> boardTmp = new ArrayList<>(newSize);
         for (int row = 0; row < newSize; row++) {
             boardTmp.add(new ArrayList<>(newSize));
@@ -80,18 +83,7 @@ public class Board {
         if (gameOver) {
             return false;
         }
-        boolean valid = false;
-        for (int i = -1; i <= 1; ++i) {
-            for (int j = -1; j <= 1; ++j) {
-                if (checkPoint(new Point(x + i, y + j))) {
-                    if (board.get(x + i).get(y + j) != State.Blank) {
-                        valid = true;
-                        break;
-                    }
-                }
-            }
-        }
-        if (!valid && moveCount != 0) {
+        if (!validMove(x, y)) {
             return false;
         }
 
@@ -147,6 +139,21 @@ public class Board {
             this.x = a;
             this.y = b;
         }
+    }
+
+    public boolean validMove(int x, int y) {
+        boolean valid = false;
+        for (int i = -1; i <= 1; ++i) {
+            for (int j = -1; j <= 1; ++j) {
+                if (checkPoint(new Point(x + i, y + j))) {
+                    if (board.get(x + i).get(y + j) != State.Blank) {
+                        valid = true;
+                        break;
+                    }
+                }
+            }
+        }
+        return (valid || moveCount == 0) && board.get(x).get(y) == State.Blank;
     }
 
     public boolean eq(Point self, Point other) {

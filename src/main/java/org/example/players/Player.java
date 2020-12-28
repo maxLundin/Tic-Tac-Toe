@@ -46,8 +46,8 @@ public abstract class Player implements AutoCloseable {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            board.reset();
             System.out.println(board.getWinner());
+            board.reset();
         }
     }
 
@@ -55,6 +55,12 @@ public abstract class Player implements AutoCloseable {
         updateReceived();
         if (board.isGameOver()) {
             System.out.println(board.getWinner());
+            try {
+                Thread.sleep(1000, 1);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            board.reset();
         }
     }
 

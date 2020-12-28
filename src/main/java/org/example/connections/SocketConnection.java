@@ -44,25 +44,6 @@ public class SocketConnection implements Connection {
     }
 
     @Override
-    public void sendPoint(Board.Point point) throws IOException {
-        String msg = point.x + ":" + point.y;
-        sendStatus(msg);
-    }
-
-    @Override
-    public Board.Point receivePoint() throws IOException {
-        final String[] receivedMsg = receiveStatus().split(":");
-        int x, y;
-        try {
-            x = Integer.parseInt(receivedMsg[0]);
-            y = Integer.parseInt(receivedMsg[1]);
-        } catch (NumberFormatException e) {
-            throw new IllegalStateException("Number format error");
-        }
-        return new Board.Point(x, y);
-    }
-
-    @Override
     public void sendStatus(String status) throws IOException {
         DatagramPacket dp = getDatagramPacket(status.getBytes(StandardCharsets.UTF_8), packet.getSocketAddress());
         ds.send(dp);
